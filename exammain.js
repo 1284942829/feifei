@@ -165,7 +165,6 @@ $(function () {
 })
 
 
-
 /**
  * 获取多点登录状态
  */
@@ -266,7 +265,7 @@ function focusSubmitAlert(title, content, okValue, okfunc) {
 function topOnFocus(param, param2) {
 	focusMap[param] = false;
 	//console.log(param2+"--"+focusMap[param]+"---"+JSON.stringify(focusMap)+"---"+new Date().getTime());
-
+	
 }
 
 var setTimeFlag = false;//在setTimeOut執行期間内不再執行
@@ -289,10 +288,6 @@ function topOnBlur(param, param2) {
 				focusFlag = true;
 			}
 		}
-		//是否启用弹窗的二次判断
-		if (!focusEnable || top.isSubmittedPaper || screenshoting) {
-			return;
-		}
 		if (!focusFlag) {//如果窗口没焦点则弹窗警告
 			var title = "提示", content = "<p>系统检测到您离开考试界面" + leavePageNum + "次，</p><p>考试过程中禁止离开考试界面，</p><p>否则系统将强制交卷！</p>", okValue = "确定";
 			if ("1" == switchPageNum) {
@@ -301,6 +296,7 @@ function topOnBlur(param, param2) {
 			}
 
 			if ("-1" != switchPageNum) {
+			
 				if ("1" != switchPageNum) {
 					switchPageNum--;
 					var param = {};
@@ -312,7 +308,7 @@ function topOnBlur(param, param2) {
 					// 切屏抓拍图片路径
 					//top.screenshot(function(capturePicPath){
 					//	param.capturePicPath = capturePicPath.replace("/home/public/static/fiftest/", cndURL) ;
-					//
+					//	
 					//	$.ajax({
 					//		type: "POST",
 					//		url: baseURL + "/examPaper/updateSwitchPageNum",
@@ -320,8 +316,8 @@ function topOnBlur(param, param2) {
 					//		success: function (msg) {
 					//		}
 					//	});
-						focusAlert(title, content, okValue, function () { });
-					},2);
+					//	focusAlert(title, content, okValue, function () { });
+					//},2);
 					
 					
 					
@@ -361,7 +357,7 @@ function topOnBlur(param, param2) {
 					//			});
 					//		}
 					//	}
-					//  );
+					//);
 				}
 			} else {
 				//	focusAlert( title , content , okValue ,function(){});
