@@ -162,9 +162,31 @@ $(function () {
 	downLoadMedia();
 	//获取多点登录状态
 	getAbnormal();
+	
+	/*var isFullScreen = document.fullscreenElement || document.mozFullScreenElement||document.webkitFullscreenElement
+	if(!isFullScreen && totalSwitchNum > -10){
+		topAlert("提示", "请开启全屏模式", "确定", function(){
+			launchFullScreen(top.window.document.documentElement);
+		});
+	}*/
+	//var screenChange = document.webkitfullscreenchange || document.mozfullscreenchange || document.fullscreenchange;
+	
 })
 
-
+function launchFullScreen(element) {
+	try{ 
+		if (element.requestFullscreen) {
+			element.requestFullscreen();
+		} else if (element.mozRequestFullScreen) {
+			element.mozRequestFullScreen();
+		} else if (element.webkitRequestFullscreen) {
+			element.webkitRequestFullscreen();
+		} else if (element.msRequestFullscreen) {
+			element.msRequestFullscreen();
+		}
+	}catch(e){ 
+	}
+}
 
 /**
  * 获取多点登录状态
@@ -263,10 +285,15 @@ function focusSubmitAlert(title, content, okValue, okfunc) {
 	}, 30000);
 }
 
+var isLeavingPage = false;
 function topOnFocus(param, param2) {
 	focusMap[param] = false;
 	//console.log(param2+"--"+focusMap[param]+"---"+JSON.stringify(focusMap)+"---"+new Date().getTime());
-
+	// 发送切回屏幕消息
+	if(isLeavingPage){
+		switchPageIn();
+		isLeavingPage = false;
+	}
 }
 
 var setTimeFlag = false;//在setTimeOut執行期間内不再執行
@@ -294,6 +321,7 @@ function topOnBlur(param, param2) {
 			return;
 		}
 		if (!focusFlag) {//如果窗口没焦点则弹窗警告
+			var leavePageNum = switchPageNum > 1 ? totalSwitchNum - switchPageNum + 1 : totalSwitchNum;
 			var title = "提示", content = "<p>系统检测到您离开考试界面" + leavePageNum + "次，</p><p>考试过程中禁止离开考试界面，</p><p>否则系统将强制交卷！</p>", okValue = "确定";
 			if ("1" == switchPageNum) {
 				content = "多次切出考试界面，你已被强制交卷。\n \r如有疑问，请联系监考教师。"
@@ -301,6 +329,14 @@ function topOnBlur(param, param2) {
 			}
 
 			if ("-1" != switchPageNum) {
+				// 发送切回屏幕消息
+				if(isLeavingPage){
+					switchPageIn();
+					isLeavingPage = false;
+				} else {
+					isLeavingPage = true;
+				}
+
 				if ("1" != switchPageNum) {
 					switchPageNum--;
 					var param = {};
@@ -310,16 +346,16 @@ function topOnBlur(param, param2) {
 					param.batchId = batchId;
 					param.studentId = studentId;
 					// 切屏抓拍图片路径
-					//top.screenshot(function(capturePicPath){
-					//	param.capturePicPath = capturePicPath.replace("/home/public/static/fiftest/", cndURL) ;
-					//
-					//	$.ajax({
-					//		type: "POST",
-					//		url: baseURL + "/examPaper/updateSwitchPageNum",
-					//		data: param,
-					//		success: function (msg) {
-					//		}
-					//	});
+					top.screenshot(function(capturePicPath){
+						param.capturePicPath = capturePicPath.replace("/home/public/static/fiftest/", cndURL) ;
+						
+						$.ajax({
+							type: "POST",
+							url: baseURL + "/examPaper/updateSwitchPageNum",
+							data: param,
+							success: function (msg) {
+							}
+						});
 						focusAlert(title, content, okValue, function () { });
 					},2);
 					
@@ -330,38 +366,38 @@ function topOnBlur(param, param2) {
 						focusDlog.close().remove();
 					}
 					//强制交卷
-					//$.post(
-					//	baseURL + "/examPaper/saveStudentAnswer.json",
-					//	{ studentResultId: studentExamResultId, examPaperId: examPaperId, batchId: batchId, studentId: studentId, isTrain: isTrain },
-					//	function rendResponds(data) {
-					//		var data1 = data;
-					//		if (data1.done == "failed") {
-					//			dialog({ content: data1.info, okValue: '确定' }).show();
-					//			return;
-					//		} else {
-					//			//强制交卷状态更新
-					//			var param = {};
-					//			param.batchId = batchId;
-					//			param.studentId = studentId;
-					//			param.examState = 1;
-					//			param.studentExamResultId = studentExamResultId;
-					//			$.ajax({
-					//				type: "POST",
-					//				url: baseURL + "/faceStudentPic/updateExamState",
-					//				data: param,
-					//				success: function (msg) {
-					//					if (msg.result == "1") {
-					//						switchPageNum = '-1';
-					//						focusSubmitAlert(title, content, okValue, function () {
-					//							top.location.href = baseURL;
-					//							//location.reload();
-					//						});
-					//					}
-					//				}
-					//			});
-					//		}
-					//	}
-					//  );
+					$.post(
+						baseURL + "/examPaper/saveStudentAnswer.json",
+						{ studentResultId: studentExamResultId, examPaperId: examPaperId, batchId: batchId, studentId: studentId, isTrain: isTrain },
+						function rendResponds(data) {
+							var data1 = data;
+							if (data1.done == "failed") {
+								dialog({ content: data1.info, okValue: '确定' }).show();
+								return;
+							} else {
+								//强制交卷状态更新
+								var param = {};
+								param.batchId = batchId;
+								param.studentId = studentId;
+								param.examState = 1;
+								param.studentExamResultId = studentExamResultId;
+								$.ajax({
+									type: "POST",
+									url: baseURL + "/faceStudentPic/updateExamState",
+									data: param,
+									success: function (msg) {
+										if (msg.result == "1") {
+											switchPageNum = '-1';
+											focusSubmitAlert(title, content, okValue, function () {
+												top.location.href = baseURL;
+												//location.reload();
+											});
+										}
+									}
+								});
+							}
+						}
+					);
 				}
 			} else {
 				//	focusAlert( title , content , okValue ,function(){});
@@ -379,19 +415,19 @@ window.onblur = function () {
 };
 
 // 触发屏幕切回请求
-//function switchPageIn() {
-//	if ("-1" != switchPageNum && !isSubmittedPaper) {
-//		var param = {};
-//		param.batchId = batchId;
-//		$.ajax({
-//			type: "POST",
-//			url: baseURL + "/examPaper/switchPageIn",
-//			data: param,
-//			success: function (msg) {
-//			}
-//		});
-//	}
-//}
+function switchPageIn() {
+	if ("-1" != switchPageNum && !isSubmittedPaper) {
+		var param = {};
+		param.batchId = batchId;
+		$.ajax({
+			type: "POST",
+			url: baseURL + "/examPaper/switchPageIn",
+			data: param,
+			success: function (msg) {
+			}
+		});
+	}
+}
 
 //打开考试页面的左右两侧
 function openExam() {
