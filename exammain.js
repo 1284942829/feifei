@@ -1,4 +1,4 @@
-//var intDiff = parseInt(1800);//倒计时初始时间
+//var intDiff = parseInt(1800);//倒计时初始时间POJIE
 var winHeight = 0, winWidth = 0, writHeight = 0;//自适应
 //var aswTrLength=$(".exam_right-writ-answer2").children("table").children("tbody").children("tr").length,aswTrHeight=0,aswHeight=$(".exam_right-writ-answer").height();
 
