@@ -2310,4 +2310,3 @@
 		  }
 		  writHeight = writHeight - $(".exam_right-header-con").height() -54;
 	}
-
