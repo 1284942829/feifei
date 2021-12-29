@@ -1,4 +1,4 @@
-//var intDiff = parseInt(1800);//倒计时初始时间POJIE
+//var intDiff = parseInt(1800);//倒计时初始时间
 var winHeight = 0, winWidth = 0, writHeight = 0;//自适应
 //var aswTrLength=$(".exam_right-writ-answer2").children("table").children("tbody").children("tr").length,aswTrHeight=0,aswHeight=$(".exam_right-writ-answer").height();
 
@@ -272,9 +272,6 @@ var setTimeFlag = false;//在setTimeOut執行期間内不再執行
 function topOnBlur(param, param2) {
 	focusMap[param] = true;
 	if (!focusEnable) {//是否启用弹窗
-		return;
-	}
-	if (screenshoting) {//是否在截屏
 		return;
 	}
 	if (setTimeFlag || submitDlog.open) {
